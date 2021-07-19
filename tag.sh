@@ -9,13 +9,12 @@ You will be promted to give file(s) as command-line arguments if you have not al
 file="$1"
 output="$file-tagged"
 
-cp "$file" "$output"
-
 [ ! -f "$file" ] && echo "Provide a file to tag." && err
 
 while read -r line; do
+    last=${line##* }
     for word in $line; do
-        pos=$(words "$word" | grep -v \; | grep -v \] | grep -v ENTER | awk '{print $2}' | sort -u | xargs)
-	sed -i "s/$word/$word\/\/$pos/g" "$output"
+        pos=$(words "$word" | grep -v \; | grep -v \] | grep -v ENTER | awk '{print $2}' | sort -u | tr -d '\n')
+        [ "$word" = "$last" ] && printf "%s\n" "$word" >> "$output" || printf "%s//%s " "$word" "$pos" >> "$output"
     done
 done < "$file"
