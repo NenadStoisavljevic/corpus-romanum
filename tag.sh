@@ -17,8 +17,7 @@ sub() {
     for arg in $@; do
         label=$(echo "$tags" | grep -w "$arg" | cut -d ':' -f 2)
         [ -z "$label" ] && labels="${labels}$arg" || labels="${labels}$label"
-    done
-    printf "%s\n" "$labels"
+    done; printf "%s\n" "$labels"
 }
 
 err() { echo "Usage :
@@ -30,11 +29,13 @@ output="$file-tagged"
 
 [ ! -f "$file" ] && echo "Provide a file to tag." && err
 
+echo "Tagging \"$file\"..."
+
 while read -r line; do
     last=${line##* }
     for word in $line; do
-        pos=$(words "$word" | grep -v \; | grep -v \] | grep -v ENTER | awk '{print $2}' | sort -u | xargs)
-	label=$(sub "$pos")
+        pos=$(words "$word" | grep -Ev '(;|])' | awk '{print $2}' | sort -u)
+        label=$(sub "$pos")
         [ "$word" = "$last" ] && printf "%s//%s\n" "$word" "$label" >> "$output" || printf "%s//%s " "$word" "$label" >> "$output"
     done
 done < "$file"
