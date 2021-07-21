@@ -2,7 +2,7 @@
 
 # Requires Whitacker's Words (Latin dictionary), you can find it at https://github.com/mk270/whitakers-words
 
-tags="ADJ:A
+letters="ADJ:A
 ADV:D
 CONJ:C
 INTERJ:I
@@ -13,10 +13,9 @@ SUFFIX:S
 VPAR:R"
 
 sub() {
-    labels=""
-    for arg in $@; do
-        label=$(echo "$tags" | grep -w "$arg" | cut -d ':' -f 2)
-        [ -z "$label" ] && labels="${labels}$arg" || labels="${labels}$label"
+    for x in $@; do
+        tag=$(echo "$letters" | grep -w "$x" | cut -d ':' -f 2)
+        [ -z "$tag" ] && labels="${labels}$x" || labels="${labels}$tag"
     done; printf "%s\n" "$labels"
 }
 
@@ -35,7 +34,7 @@ while read -r line; do
     last=${line##* }
     for word in $line; do
         pos=$(words "$word" | grep -Ev '(;|]|words)' | awk '{print $2}' | sort -u)
-        label=$(sub "$pos")
-        [ "$word" = "$last" ] && printf "%s//%s\n" "$word" "$label" >> "$output" || printf "%s//%s " "$word" "$label" >> "$output"
+        letter=$(sub "$pos")
+        [ "$word" = "$last" ] && printf "%s//%s\n" "$word" "$letter" >> "$output" || printf "%s//%s " "$word" "$letter" >> "$output"
     done
 done < "$file"
