@@ -13,7 +13,7 @@ SUFFIX:S
 VPAR:R"
 
 sub() {
-    for x in $@; do
+    for x in $1; do
         tag=$(echo "$letters" | grep -w "$x" | cut -d ':' -f 2)
         [ -z "$tag" ] && labels="${labels}$x" || labels="${labels}$tag"
     done; printf "%s\n" "$labels"
