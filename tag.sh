@@ -19,22 +19,25 @@ sub() {
     done; printf "%s\n" "$labels"
 }
 
-err() { echo "Usage :
-    taglatin [OPTIONS] file(s)
-You will be prompted to give file(s) as command-line arguments if you have not already." && exit 1 ;}
+main() {
+    while read -r line; do
+        last=${line##* }
+        for word in $line; do
+            pos=$(words "$word" | grep -Ev '(;|]|words)' | awk '{print $2}' | sort -u)
+            letter=$(sub "$pos")
+            [ "$word" = "$last" ] && printf "%s//%s\n" "$word" "$letter" >> "$output" || printf "%s//%s " "$word" "$letter" >> "$output"
+        done
+    done < "$1"
+}
 
-file="$1"
-output="$file-tagged"
-
-[ ! -f "$file" ] && echo "Provide a file to tag." && err
-
-echo "Tagging \"$file\"..."
-
-while read -r line; do
-    last=${line##* }
-    for word in $line; do
-        pos=$(words "$word" | grep -Ev '(;|]|words)' | awk '{print $2}' | sort -u)
-        letter=$(sub "$pos")
-        [ "$word" = "$last" ] && printf "%s//%s\n" "$word" "$letter" >> "$output" || printf "%s//%s " "$word" "$letter" >> "$output"
+if [ $# -eq 0 ]
+then
+    echo "Provide file(s) to tag." && exit 1
+else
+    for name in "$@"; do
+        file="$name"
+        output="$file-tagged"
+        echo "Tagging \"$file\"..."
+        main "$file"
     done
-done < "$file"
+fi
