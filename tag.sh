@@ -14,6 +14,9 @@ PRON:O
 SUFFIX:S
 VPAR:R"
 
+# Get and format text from The Latin Library.
+gettext() { curl -sf "$link" > "$title" && sed -i 's/<[^>]\+>/ /g' "$title" || exit 1 ;}
+
 sub() { # Replace parts of speech with a letter.
     for x in $1; do
         letter=$(echo "$subs" | grep -w "$x" | cut -d ':' -f 2)
@@ -38,10 +41,19 @@ tag() { # Tag file.
 }
 
 # Check for number of files provided and tag each one
-# accordingly, otherwise prompt user to provide a file.
-[ $# -eq 0 ] && echo "Provide file(s) to tag." && exit 1
-for name in "$@"; do
-    file="$name"
-    output="$name-tagged"
+# accordingly, otherwise prompt user to provide a link.
+if [ $# -eq 0 ]
+then
+    echo "Enter the full link of the text:"; read -r link
+    echo "Enter the title of the text:"; read -r title
+    gettext
+    file="$title"
+    output="$title-tagged"
     echo "Tagging \"$file\"..." && tag "$file"
-done
+else
+    for name in "$@"; do
+        file="$name"
+        output="$name-tagged"
+        echo "Tagging \"$file\"..." && tag "$file"
+    done
+fi
