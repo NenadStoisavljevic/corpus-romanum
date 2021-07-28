@@ -15,7 +15,7 @@ SUFFIX:S
 VPAR:R"
 
 # Get and format text from The Latin Library.
-gettext() { curl -sf "$link" > "$title" && sed -i 's/<[^>]\+>/ /g' "$title" || exit 1 ;}
+getlatin() { curl -sf "$link" > "$esctitle" && sed -i 's/<[^>]*>//g' "$esctitle" || exit 1 ;}
 
 sub() { # Replace parts of speech with a letter.
     for x in $1; do
@@ -25,6 +25,7 @@ sub() { # Replace parts of speech with a letter.
 }
 
 tag() { # Tag file.
+    output="$1-tagged"
     while read -r line; do
         last=${line##* }
         for word in $line; do
@@ -46,14 +47,10 @@ if [ $# -eq 0 ]
 then
     echo "Enter the full link of the text:"; read -r link
     echo "Enter the title of the text:"; read -r title
-    gettext
-    file="$title"
-    output="$title-tagged"
-    echo "Tagging \"$file\"..." && tag "$file"
+    esctitle="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
+    getlatin && echo "Tagging \"$esctitle\"..." && tag "$esctitle"
 else
-    for name in "$@"; do
-        file="$name"
-        output="$name-tagged"
+    for file in "$@"; do
         echo "Tagging \"$file\"..." && tag "$file"
     done
 fi
