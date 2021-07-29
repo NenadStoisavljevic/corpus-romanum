@@ -16,7 +16,9 @@ VPAR:R"
 
 # Get and format text from The Latin Library.
 getlatin() { curl -sf "$link" > "$esctitle" || exit 1
-    sed -i 's/<[^>]*>//g;s/&nbsp;//g;s/\t//g' "$esctitle"
+    sed -i 's/<[^>]*>//g;' "$esctitle"
+    sed -i 's/&nbsp;//g;s/\t//g' "$esctitle"
+    sed -i '/^$/N;/^\n$/D' "$esctitle"
 }
 
 sub() { # Replace parts of speech with a letter.
