@@ -12,6 +12,8 @@ NUM:M
 PREP:P
 PRON:O
 SUFFIX:S
+SUPINE:N
+TACKON:T
 VPAR:R"
 
 # Get and format text from The Latin Library.
@@ -31,11 +33,11 @@ sub() { # Replace parts of speech with a letter.
 tag() { # Tag file.
     output="$1-tagged"
     while read -r line; do
-        last=${line##* }
+        [ -z "$line" ] && printf "\n" >> "$output" || last=${line##* }
         for word in $line; do
             # Run the word in `words` and only select the possible
             # parts of speech.
-            pos=$(words "$word" | grep -Ev '(;|]|words)' | awk '{print $2}' | sort -u)
+            pos=$(words "$word" | grep -Ev '(;|])' | awk '$2~/[A-Z]/{print $2}' | sort -u)
             letters=$(sub "$pos")
             # Append each tagged word to the output file.
             # Print a newline when the last word of a sentence is
