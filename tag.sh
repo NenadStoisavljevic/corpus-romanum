@@ -44,7 +44,8 @@ tag() { # Tag file.
             # Append each tagged word to the output file.
             # Print a newline when the last word of a sentence is
             # reached, otherwise print the word with a space.
-            [ "$word" = "$last" ] && printf "%s//%s\n" "$word" "$letters" >> "$output" || printf "%s//%s " "$word" "$letters" >> "$output"
+            [ "$word" = "$last" ] && printf "%s//%s\n" "$word" "$letters" >> "$output" ||
+                [ -z "$letters" ] && printf "%s " "$word" >> "$output" || printf "%s//%s " "$word" "$letters" >> "$output"
         done
     done < "$1"
 }
