@@ -35,7 +35,7 @@ sub() { # Replace parts of speech with a letter.
 tag() { # Tag file.
     output="$1-tagged"
     while read -r line; do
-        [ -z "$line" ] && printf "\n" >> "$output" || last=${line##* } && total=$(echo "$line" | grep -ow "$last" | wc -l) && count=0
+        [ -z "$line" ] && printf "\n" >> "$output" || last=${line##* } && total=$(echo "$line" | grep -ow "$last" | wc -w) && count=0
         for word in $line; do
             [ "$word" = "$last" ] && count=$((count+1))
             # Run the word in `words` and only select the possible
@@ -45,16 +45,22 @@ tag() { # Tag file.
             # Append each tagged word to the output file.
             # Print a newline when the last word of a sentence is
             # reached, otherwise print the word with a space.
-            [ "$total" = "$count" ] && printf "%s//%s\n" "$word" "$letters" >> "$output" && unset word ||
-                [ -z "$letters" ] && printf "%s " "$word" >> "$output" || printf "%s//%s " "$word" "$letters" >> "$output"
+            if [ "$total" = "$count" ] && [ -z "$letters" ]; then
+                printf "%s\n" "$word" >> "$output"
+            elif [ "$total" = "$count" ]; then
+                printf "%s//%s\n" "$word" "$letters" >> "$output"
+            elif [ -z "$letters" ]; then
+                printf "%s " "$word" >> "$output"
+            else
+                printf "%s//%s " "$word" "$letters" >> "$output"
+            fi
         done
     done < "$1"
 }
 
 # Check for number of files provided and tag each one
 # accordingly, otherwise prompt user to provide a link.
-if [ $# -eq 0 ]
-then
+if [ $# -eq 0 ]; then
     echo "Enter the full link of the text:"; read -r link
     echo "Enter the title of the text:"; read -r title
     esctitle="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
