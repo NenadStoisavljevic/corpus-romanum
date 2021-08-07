@@ -16,8 +16,8 @@ SUPINE:N
 TACKON:T
 VPAR:R"
 
-# Get and format text from The Latin Library.
-getlatin() { curl -sf "$link" > "$esctitle" || exit 1
+getlatin() { # Get and format text from The Latin Library.
+	curl -sf "$link" > "$esctitle" || exit 1
 	sed -i 's/<[^>]*>//g
 	s/&nbsp;//g
 	s/\t//g
@@ -35,16 +35,23 @@ sub() { # Replace parts of speech with a letter.
 tag() { # Tag file.
 	output="$1-tagged"
 	while read -r line; do
+		# If the line is empty then print a newline, otherwise
+		# store the last word of the line and check for the
+		# number of occurrences of that word in the line.
 		[ -z "$line" ] && printf "\n" >> "$output" || last=${line##* } && total=$(echo "$line" | grep -ow "$last" | wc -w) && count=0
 		for word in $line; do
+			# Increment count to indicate when the last word
+			# of a line is reached.
 			[ "$word" = "$last" ] && count=$((count+1))
+
 			# Run the word in `words` and only select the possible
-			# parts of speech.
+			# parts of speech. Then use sub() to store parts of
+			# speech as single letters.
 			pos=$(words "$word" | grep -Ev '(;|])' | awk '$2~/[A-Z]/{print $2}' | sort -u)
 			letters=$(sub "$pos")
-			# Append each tagged word to the output file.
-			# Print a newline when the last word of a sentence is
-			# reached, otherwise print the word with a space.
+
+			# Check if the end of a line is reached and whether
+			# there are any parts of speech stored for that word.
 			if [ "$total" = "$count" ] && [ -z "$letters" ]; then
 				printf "%s\n" "$word" >> "$output"
 			elif [ "$total" = "$count" ]; then
@@ -58,8 +65,9 @@ tag() { # Tag file.
 	done < "$1"
 }
 
-# Check for number of files provided and tag each one
-# accordingly, otherwise prompt user to provide a link.
+# If no files are provided, then prompt the user to
+# provide a link and tag that file, otherwise loop
+# through all command-line arguments and run tag().
 if [ $# -eq 0 ]; then
 	echo "Enter the full link of the text:"; read -r link
 	echo "Enter the title of the text:"; read -r title
