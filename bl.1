@@ -1,14 +1,27 @@
 .TH BL 1 bibliotheca-latina
 .SH NAME
-bl \- bibliotheca-latina \- part-of-speech tagger for Latin text documents
+bl \- bibliotheca-latina \- grammatical tagger for Latin text documents
 .SH SYNOPSIS
 .B bl
-[\fI\,FILE\/\fR]...
+[\fI\,OPTION\/\fR]... [\fI\,FILE\/\fR]...
 .SH DESCRIPTION
 .B bl
-identifies parts of speech using
+tags each word with single letters using William Whitaker's
 .B words
-(William Whitaker's Words) and tags each word with single letters.
+to identify the parts of speech for each word.
+.SH COMMANDS
+.TP
+.B -t
+only tag one word
+.TP
+.B -y
+download and tag text from the link
+.SH DETAILS
+.TP
+.I The Latin Library
+Links should ideally come from
+.I The Latin Library
+since their HTML webpages are simple enough for formatting and tagging.
 .SH AUTHORS
 Written by Nenad Stoisavljevic <nenad@nenadstoisavljevic.xyz>.
 .SH LICENSE
