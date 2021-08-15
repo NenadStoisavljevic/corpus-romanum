@@ -72,8 +72,8 @@ tagfile() { # Tag file.
 	done < "$1"
 }
 
-blinfo() { cat << EOF
-bl: bibliotheca-latina, grammatical tagger for Latin text documents
+info() { cat << EOF
+corpus: grammatical tagger for Latin text documents
 
 Main options:
   -t	Tag file(s)
@@ -86,5 +86,5 @@ while getopts "t:w:d" o; do case "${o}" in
 	t) tagfile "$OPTARG" || exit 1 ;;
 	w) tagword "$OPTARG" || exit 1 ;;
 	d) getlatin || exit 1 ;;
-	*) blinfo; exit 1 ;;
+	*) info; exit 1 ;;
 esac done

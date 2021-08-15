@@ -1,4 +1,4 @@
-# Bibliotheca Latina
+# Corpus Romanum
 
 The main part of this script is the part-of-speech tagger which can be used to tag Latin text documents. Its purpose is to aid the Latin student in identifying adjectives, adverbs, etc., while reading any sort of Latin text. Beginner Latin students can particularly find this useful as they advance through their Latin readings while gaining a better understanding of being able to identify verbs, pronouns, etc., more easily.
 
@@ -6,7 +6,7 @@ A useful resource out there is [The Latin Library](https://www.thelatinlibrary.c
 
 ## Usage
 
-The script runs via the command `sh tag.sh [file]`. Several text document files can be passed onto the script and each one will be tagged. If no files are provided, the user is expected to paste a link to some Latin text from The Latin Library, from there it will properly format the text and then tag it.
+The script runs via the command `corpus`. Several text document files can be passed onto the script and each one will be tagged. If no files are provided, the user is expected to paste a link to some Latin text from The Latin Library, from there it will properly format the text and then tag it.
 
 The script will produce an output file `file-tagged`.
 

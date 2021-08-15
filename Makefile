@@ -9,17 +9,17 @@ endif
 
 install:
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	cp -f bin/bl $(DESTDIR)$(PREFIX)/bin
-	chmod 755 $(DESTDIR)$(PREFIX)/bin/bl
-	mkdir -p $(DESTDIR)$(PREFIX)/share/bibliotheca-latina
-	chmod 755 $(DESTDIR)$(PREFIX)/share/bibliotheca-latina
+	cp -f bin/corpus $(DESTDIR)$(PREFIX)/bin
+	chmod 755 $(DESTDIR)$(PREFIX)/bin/corpus
+	mkdir -p $(DESTDIR)$(PREFIX)/share/corpus-romanum
+	chmod 755 $(DESTDIR)$(PREFIX)/share/corpus-romanum
 	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
-	cp -f bl.1 $(DESTDIR)$(MANPREFIX)/man1/bl.1
-	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/bl.1
+	cp -f corpus.1 $(DESTDIR)$(MANPREFIX)/man1/corpus.1
+	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/corpus.1
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/bl
-	rm -rf $(DESTDIR)$(PREFIX)/share/bibliotheca-latina
-	rm -f $(DESTDIR)$(MANPREFIX)/man1/bl.1
+	rm -f $(DESTDIR)$(PREFIX)/bin/corpus
+	rm -rf $(DESTDIR)$(PREFIX)/share/corpus-romanum
+	rm -f $(DESTDIR)$(MANPREFIX)/man1/corpus.1
 
 .PHONY: install uninstall
