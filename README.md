@@ -4,15 +4,23 @@ The main part of this script is the part-of-speech tagger which can be used to t
 
 A useful resource out there is [The Latin Library](https://www.thelatinlibrary.com/), which the script is still in the process of being made to be better able to format various texts across the site.
 
-## Usage
+## Install
 
-The script runs via the command `corpus`. Several text document files can be passed onto the script and each one will be tagged. If no files are provided, the user is expected to paste a link to some Latin text from The Latin Library, from there it will properly format the text and then tag it.
-
-The script will produce an output file `file-tagged`.
-
-## Requirements
+#### Dependencies
 
 - `words` - William Whitaker's Words is a digital Latin-English dictionary with inflectional morphology support. This tool can be used to help in translations for any Latin student. Check out the repo [here](https://github.com/mk270/whitakers-words).
+
+```
+git clone https://github.com/NenadStoisavljevic/corpus-romanum
+cd corpus-romanum
+sudo make install
+```
+
+## Usage
+
+The corpus runs via the command `corpus`. Several text document files can be passed onto the script and each one will be tagged. If no files are provided, the user is expected to paste a link to some Latin text from The Latin Library, from there it will properly format the text and then tag it.
+
+The script will produce an output file `file-tagged`.
 
 ## Help the Project!
 
