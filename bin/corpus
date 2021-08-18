@@ -12,7 +12,7 @@ NUM:M
 PREP:P
 PRON:O
 SUFFIX:S
-SUPINE:N
+SUPINE:U
 TACKON:T
 VPAR:R"
 
@@ -72,12 +72,24 @@ tagfile() { # Tag file.
 	done < "$1"
 }
 
+tagword() { # Tag word.
+	for word in $1; do
+		pos=$(words "$word" | grep -Ev '(;|])' | awk '$2~/[A-Z]/{print $2}' | sort -u)
+		letters=$(sub "$pos")
+		if [ -z "$letters" ]; then
+			echo "$word is not a valid word."
+		else
+			printf "%s//%s\n" "$word" "$letters"
+		fi
+	done
+}
+
 info() { cat << EOF
 corpus: grammatical tagger for Latin text documents
 
 Main options:
   -t	Tag file(s)
-  -w	Tag word(s)
+  -w	Tag word(s) (recommended to be in double quotes)
   -d	Download Latin text from The Latin Library
 EOF
 }
