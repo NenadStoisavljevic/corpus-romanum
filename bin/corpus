@@ -16,8 +16,7 @@ SUPINE:U
 TACKON:T
 VPAR:R"
 
-getlatin() { # Get and format text from The Latin Library.
-	echo "Enter the full link of the text:"; read -r link
+getlatin() { echo "Enter the full link of the text:"; read -r link
 	echo "Enter the title of the text:"; read -r title
 	esctitle="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
 
@@ -31,34 +30,21 @@ getlatin() { # Get and format text from The Latin Library.
 	tagfile "$esctitle"
 }
 
-sub() { # Replace parts of speech with a letter.
-	for x in $1; do
+sub() { for x in $1; do
 		letter=$(echo "$subs" | grep -w "$x" | cut -d ':' -f 2)
 		[ -z "$letter" ] && labels="${labels}$x" || labels="${labels}$letter"
 	done; printf "%s\n" "$labels"
 }
 
-tagfile() { # Tag file.
-	output="$1-tagged"
-	echo "Tagging \"$1\"..."
+tagfile() { output="$1-tagged" && echo "Tagging \"$1\"..."
 	while read -r line; do
-		# If the line is empty then print a newline, otherwise
-		# store the last word of the line and check for the
-		# number of occurrences of that word in the line.
 		[ -z "$line" ] && printf "\n" >> "$output" || last=${line##* } && total=$(echo "$line" | grep -ow "$last" | wc -w) && count=0
 		for word in $line; do
-			# Increment count to indicate when the last word
-			# of a line is reached.
 			[ "$word" = "$last" ] && count=$((count+1))
 
-			# Run the word in `words` and only select the possible
-			# parts of speech. Then use sub() to store parts of
-			# speech as single letters.
 			pos=$(words "$word" | grep -Ev '(;|])' | awk '$2~/[A-Z]/{print $2}' | sort -u)
 			letters=$(sub "$pos")
 
-			# Check if the end of a line is reached and whether
-			# there are any parts of speech stored for that word.
 			if [ "$total" = "$count" ] && [ -z "$letters" ]; then
 				printf "%s\n" "$word" >> "$output"
 			elif [ "$total" = "$count" ]; then
@@ -72,8 +58,7 @@ tagfile() { # Tag file.
 	done < "$1"
 }
 
-tagword() { # Tag word.
-	for word in $1; do
+tagword() { for word in $1; do
 		pos=$(words "$word" | grep -Ev '(;|])' | awk '$2~/[A-Z]/{print $2}' | sort -u)
 		letters=$(sub "$pos")
 		if [ -z "$letters" ]; then
@@ -84,19 +69,29 @@ tagword() { # Tag word.
 	done
 }
 
+checkfile() { output="$1-tagged"
+	if [ -e "$output" ]; then
+		echo "Would you like to overwrite \"$1\"? [yN]"; read -r choice
+		echo "$choice" | grep -i "^y$" &&
+			rm -f "$1"
+	else
+		exit 1
+	fi
+}
+
 info() { cat << EOF
 corpus: grammatical tagger for Latin text documents
 
 Main options:
-  -t	Tag file(s)
+  -t	Tag file
   -w	Tag word(s) (recommended to be in double quotes)
   -d	Download Latin text from The Latin Library
 EOF
 }
 
 while getopts "t:w:d" o; do case "${o}" in
-	t) tagfile "$OPTARG" || exit 1 ;;
+	t) checkfile "$OPTARG" ; tagfile "$OPTARG" || exit 1 ;;
 	w) tagword "$OPTARG" || exit 1 ;;
 	d) getlatin || exit 1 ;;
-	*) info; exit 1 ;;
+	*) info ; exit 1 ;;
 esac done
