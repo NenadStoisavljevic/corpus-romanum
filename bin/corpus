@@ -3,6 +3,8 @@
 # Requires Whitacker's Words (Latin-English dictionary), you can
 # find it at https://github.com/mk270/whitakers-words.
 
+corpusdir="${XDG_DATA_HOME:-$HOME/.local/share}/corpus"
+
 # A list of substitutes for the parts of speech.
 subs="ADJ:A
 ADV:D
@@ -20,14 +22,14 @@ getlatin() { echo "Enter the full link of the text:"; read -r link
 	echo "Enter the title of the text:"; read -r title
 	esctitle="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
 
-	curl -sf "$link" > "$esctitle" || exit 1
+	curl -sf "$link" > "$corpusdir/$esctitle" || exit 1
 	sed -i 's/<[^>]*>//g
 	s/&nbsp;//g
 	s/\t//g
 	/./,/^$/!d
-	s/  \+/ /g' "$esctitle"
+	s/  \+/ /g' "$corpusdir/$esctitle"
 
-	tagfile "$esctitle"
+	tagfile "$corpusdir/$esctitle"
 }
 
 sub() { for x in $1; do
@@ -71,13 +73,16 @@ tagword() { for word in $1; do
 
 checkfile() { output="$1-tagged"
 	if [ -e "$output" ]; then
-		echo "Would you like to overwrite \"$1\"? [yN]"; read -r choice
-		echo "$choice" | grep -i "^y$" &&
-			rm -f "$1"
-	else
-		exit 1
+		echo "The file \"$output\" already exists, would you like to remove it? [yN]"; read -r choice
+		echo "$choice" | grep -iq "^y$" &&
+			rm -f "$output"
 	fi
 }
+
+
+getfiles() { files=$(find "$corpusdir" -type f -printf "%f\n" | sort) ;}
+
+list() { getfiles && [ -n "$files" ] && echo "$files" || exit 1 ;}
 
 info() { cat << EOF
 corpus: grammatical tagger for Latin text documents
@@ -86,12 +91,14 @@ Main options:
   -t	Tag file
   -w	Tag word(s) (recommended to be in double quotes)
   -d	Download Latin text from The Latin Library
+  -l	List files stored in the corpus
 EOF
 }
 
-while getopts "t:w:d" o; do case "${o}" in
+while getopts "t:w:dl" o; do case "${o}" in
 	t) checkfile "$OPTARG" ; tagfile "$OPTARG" || exit 1 ;;
 	w) tagword "$OPTARG" || exit 1 ;;
 	d) getlatin || exit 1 ;;
+	l) list || exit 1 ;;
 	*) info ; exit 1 ;;
 esac done
