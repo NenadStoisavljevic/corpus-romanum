@@ -18,8 +18,10 @@ SUPINE:U
 TACKON:T
 VPAR:R"
 
-getlatin() { echo "Enter the full link of the text:"; read -r link
-	echo "Enter the title of the text:"; read -r title
+getlatin() { echo "Enter the full link of the text:"
+	read -r link
+	echo "Enter the title of the text:"
+	read -r title
 	esctitle="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
 
 	curl -sf "$link" > "$corpusdir/$esctitle" || exit 1
@@ -73,14 +75,25 @@ tagword() { for word in $1; do
 
 checkfile() { output="$1-tagged"
 	if [ -e "$output" ]; then
-		echo "The file \"$output\" already exists, would you like to remove it? [yN]"; read -r choice
+		echo "The file \"$output\" already exists, would you like to remove it? [yN]"
+		read -r choice
 		echo "$choice" | grep -iq "^y$" &&
 			rm -f "$output"
 	fi
 }
 
+delete() { echo "Choose the file you would like to delete (by number):"
+	list || return 1
+	read -r input
+	chosen="^$input:"
 
-getfiles() { files=$(find "$corpusdir" -type f -printf "%f\n" | sort) ;}
+	file="$(echo "$files" | grep "$chosen" | cut -f 2)"
+	[ -z "$file" ] && echo "\"$file\" is not a valid file." && return 1
+	rm -f "$corpusdir/$file"
+}
+
+
+getfiles() { files=$(find "$corpusdir" -type f -printf "%f\n" | grep -o "[0-9]\{1,\}-.*" | sed "s/-/: /" | sort -n) ;}
 
 list() { getfiles && [ -n "$files" ] && echo "$files" || exit 1 ;}
 
@@ -90,15 +103,17 @@ corpus: grammatical tagger for Latin text documents
 Main options:
   -t	Tag file
   -w	Tag word(s) (recommended to be in double quotes)
-  -d	Download Latin text from The Latin Library
+  -c	Download Latin text from The Latin Library
   -l	List files stored in the corpus
+  -d	Remove file from corpus
 EOF
 }
 
-while getopts "t:w:dl" o; do case "${o}" in
+while getopts "t:w:cld" o; do case "${o}" in
 	t) checkfile "$OPTARG" ; tagfile "$OPTARG" || exit 1 ;;
 	w) tagword "$OPTARG" || exit 1 ;;
-	d) getlatin || exit 1 ;;
+	c) getlatin || exit 1 ;;
 	l) list || exit 1 ;;
+	d) delete || exit 1 ;;
 	*) info ; exit 1 ;;
 esac done
