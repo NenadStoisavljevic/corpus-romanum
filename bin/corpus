@@ -82,14 +82,21 @@ checkfile() { output="$1-tagged"
 	fi
 }
 
-delete() { echo "Choose the file you would like to delete (by number):"
-	list || return 1
+delete() { echo "Choose the file you would like to delete (by number):" && list
 	read -r input
-	chosen="^$input:"
+	chosen="^$input-"
+	stored="$(find "$corpusdir" -type f -printf "%f\n" | grep "$chosen")"
+	count="$(echo "$stored" | grep -c "$chosen")"
 
-	file="$(echo "$files" | grep "$chosen" | cut -f 2)"
-	[ -z "$file" ] && echo "\"$file\" is not a valid file." && return 1
-	rm -f "$corpusdir/$file"
+	if [ "$count" -gt "1" ]; then
+		for file in $stored; do
+			rm -f "$corpusdir/$file"
+		done
+	elif [ "$count" -eq 1 ]; then
+		rm -f "$corpusdir/$stored"
+	else
+		echo "File does not exist, could not delete."
+	fi
 }
 
 
