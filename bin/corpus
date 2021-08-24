@@ -22,16 +22,17 @@ getlatin() { echo "Enter the full link of the text:"
 	read -r link
 	echo "Enter the title of the text:"
 	read -r title
-	esctitle="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
+	getfiles; for x in $(seq 1 999); do echo "$files" | grep -q "^$x:" || { export id="$x"; break ;}; done
+	title="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
 
-	curl -sf "$link" > "$corpusdir/$esctitle" || exit 1
+	curl -sf "$link" > "$corpusdir/$id-$title" || exit 1
 	sed -i 's/<[^>]*>//g
 	s/&nbsp;//g
 	s/\t//g
 	/./,/^$/!d
-	s/  \+/ /g' "$corpusdir/$esctitle"
+	s/  \+/ /g' "$corpusdir/$id-$title"
 
-	tagfile "$corpusdir/$esctitle"
+	tagfile "$corpusdir/$id-$title"
 }
 
 sub() { for x in $1; do
@@ -40,7 +41,8 @@ sub() { for x in $1; do
 	done; printf "%s\n" "$labels"
 }
 
-tagfile() { output="$1-tagged" && echo "Tagging \"$1\"..."
+tagfile() { file="$(basename "$1")"
+	output="$1-tagged" && echo "Tagging \"$file\"..."
 	while read -r line; do
 		[ -z "$line" ] && printf "\n" >> "$output" || last=${line##* } && total=$(echo "$line" | grep -ow "$last" | wc -w) && count=0
 		for word in $line; do
@@ -99,6 +101,16 @@ delete() { echo "Choose the file you would like to delete (by number):" && list
 	fi
 }
 
+view() { echo "Choose the file you would like to view (by number):" && list
+	read -r input
+	chosen="^$input-.*-tagged"
+	stored="$(find "$corpusdir" -type f -printf "%f\n" | grep "$chosen")"
+	if [ -z "$stored" ]; then
+		echo "File does not exist, could not open."
+	else
+		less "$corpusdir/$stored"
+	fi
+}
 
 getfiles() { files=$(find "$corpusdir" -type f -printf "%f\n" | grep -o "[0-9]\{1,\}-.*" | sed "s/-/: /" | sort -n) ;}
 
@@ -111,15 +123,17 @@ Main options:
   -t	Tag file
   -w	Tag word(s) (recommended to be in double quotes)
   -c	Download Latin text from The Latin Library
+  -v	View tagged file
   -l	List files stored in the corpus
   -d	Remove file from corpus
 EOF
 }
 
-while getopts "t:w:cld" o; do case "${o}" in
+while getopts ":t:w:cvld" o; do case "${o}" in
 	t) checkfile "$OPTARG" ; tagfile "$OPTARG" || exit 1 ;;
 	w) tagword "$OPTARG" || exit 1 ;;
 	c) getlatin || exit 1 ;;
+	v) view || exit 1 ;;
 	l) list || exit 1 ;;
 	d) delete || exit 1 ;;
 	*) info ; exit 1 ;;
