@@ -5,6 +5,8 @@
 
 corpusdir="${XDG_DATA_HOME:-$HOME/.local/share}/corpus"
 
+! mkdir -p "$corpusdir" && echo "Do you have write access in this directory?" && exit 1
+
 # A list of substitutes for the parts of speech.
 subs="ADJ:A
 ADV:D
@@ -20,19 +22,19 @@ VPAR:R"
 
 getlatin() { echo "Enter the full link of the text:"
 	read -r link
-	echo "Enter the title of the text:"
-	read -r title
+	echo "Enter the name of the text:"
+	read -r name
 	getfiles; for x in $(seq 1 99); do echo "$files" | grep -q "^$x)" || { export id=$x; break ;}; done
-	title="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
+	name="$(echo "$name" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
 
-	curl -sf "$link" > "$corpusdir/$id-$title" || exit 1
+	curl -sf "$link" > "$corpusdir/$id-$name" || exit 1
 	sed -i 's/<[^>]*>//g
 	s/&nbsp;//g
 	s/\t//g
 	/./,/^$/!d
-	s/  \+/ /g' "$corpusdir/$id-$title"
+	s/  \+/ /g' "$corpusdir/$id-$name"
 
-	tagfile "$corpusdir/$id-$title"
+	tagfile "$corpusdir/$id-$name"
 }
 
 sub() { for x in $1; do
