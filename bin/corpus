@@ -22,7 +22,7 @@ getlatin() { echo "Enter the full link of the text:"
 	read -r link
 	echo "Enter the title of the text:"
 	read -r title
-	getfiles; for x in $(seq 1 999); do echo "$files" | grep -q "^$x:" || { export id="$x"; break ;}; done
+	getfiles; for x in $(seq 1 99); do echo "$files" | grep -q "^$x)" || { export id=$x; break ;}; done
 	title="$(echo "$title" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
 
 	curl -sf "$link" > "$corpusdir/$id-$title" || exit 1
@@ -41,14 +41,15 @@ sub() { for x in $1; do
 	done; printf "%s\n" "$labels"
 }
 
-tagfile() { file="$(basename "$1")"
-	output="$1-tagged" && echo "Tagging \"$file\"..."
+tagfile() { file="$(basename "$1" | sed "s/[0-9]\{1,\}-//")"
+	id=$((id+1))
+	output="$corpusdir/$id-$file-tagged" && echo "Tagging \"$file\"..."
 	while read -r line; do
 		[ -z "$line" ] && printf "\n" >> "$output" || last=${line##* } && total=$(echo "$line" | grep -ow "$last" | wc -w) && count=0
 		for word in $line; do
 			[ "$word" = "$last" ] && count=$((count+1))
 
-			pos=$(words "$word" | grep -Ev '(;|])' | awk '$2~/[A-Z]/{print $2}' | sort -u)
+			pos=$(words "$word" | grep -Ev '(;|])' | awk '$2~/[A-Z]$/{print $2}' | sort -u)
 			letters=$(sub "$pos")
 
 			if [ "$total" = "$count" ] && [ -z "$letters" ]; then
@@ -103,7 +104,7 @@ delete() { echo "Choose the file you would like to delete (by number):" && list
 
 view() { echo "Choose the file you would like to view (by number):" && list
 	read -r input
-	chosen="^$input-.*-tagged"
+	chosen="^$input-"
 	stored="$(find "$corpusdir" -type f -printf "%f\n" | grep "$chosen")"
 	if [ -z "$stored" ]; then
 		echo "File does not exist, could not open."
@@ -112,7 +113,7 @@ view() { echo "Choose the file you would like to view (by number):" && list
 	fi
 }
 
-getfiles() { files=$(find "$corpusdir" -type f -printf "%f\n" | grep -o "[0-9]\{1,\}-.*" | sed "s/-/: /" | sort -n) ;}
+getfiles() { files=$(find "$corpusdir" -type f -printf "%f\n" | grep -o "[0-9]\{1,\}-.*" | sed "s/-/) /" | sort -n) ;}
 
 list() { getfiles && [ -n "$files" ] && echo "$files" || exit 1 ;}
 
@@ -123,7 +124,7 @@ Main options:
   -t	Tag file
   -w	Tag word(s) (recommended to be in double quotes)
   -c	Download Latin text from The Latin Library
-  -v	View tagged file
+  -v	View any file from the corpus
   -l	List files stored in the corpus
   -d	Remove file from corpus
 EOF
