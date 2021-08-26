@@ -43,9 +43,12 @@ sub() { for x in $1; do
 	done; printf "%s\n" "$labels"
 }
 
-tagfile() { file="$(basename "$1" | sed "s/[0-9]\{1,\}-//")"
-	id=$((id+1))
+tagfile() { if [ -n "$id" ]; then
+	file="$(basename "$1" | sed "s/[0-9]\{1,\}-//")"; id=$((id+1))
 	output="$corpusdir/$id-$file-tagged" && echo "Tagging \"$file\"..."
+else
+	output="$1-tagged" && echo "Tagging \"$1\"..."
+fi
 	while read -r line; do
 		[ -z "$line" ] && printf "\n" >> "$output" || last=${line##* } && total=$(echo "$line" | grep -ow "$last" | wc -w) && count=0
 		for word in $line; do
