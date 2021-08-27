@@ -94,16 +94,19 @@ delete() { echo "Choose the file you would like to delete (by number):" && list
 	read -r input
 	chosen="^$input-"
 	stored="$(find "$corpusdir" -type f -printf "%f\n" | grep "$chosen")"
-	count="$(echo "$stored" | grep -c "$chosen")"
+	file="$(echo "$stored" | sed "s/^.-//")"; id=$((input+1))
+	tagged="$(find "$corpusdir" -type f -printf "%f\n" | grep "$id-$file-tagged")"
 
-	if [ "$count" -gt "1" ]; then
-		for file in $stored; do
-			rm -f "$corpusdir/$file"
-		done
-	elif [ "$count" -eq 1 ]; then
+	if [ -n "$stored" ] && [ -n "$tagged" ]; then
+		echo "Would you like to remove the tagged file as well? [yN]"
+		read -r choice
+		echo "$choice" | grep -iq "^y$" &&
+			rm -f "$corpusdir/$tagged" || echo "Skipping tagged file..."
+		rm -f "$corpusdir/$stored"
+	elif [ -n "$stored" ] && [ -z "$tagged" ]; then
 		rm -f "$corpusdir/$stored"
 	else
-		echo "File does not exist, could not delete."
+		echo "File does not exist, could not delete it."
 	fi
 }
 
