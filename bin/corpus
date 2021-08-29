@@ -26,15 +26,14 @@ getlatin() { echo "Enter the full link of the text:"
 	read -r name
 	getfiles; for x in $(seq 1 99); do echo "$files" | grep -q "^$x)" || { export id=$x; break ;}; done
 	name="$(echo "$name" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
+	file="$corpusdir/$id-$name"
 
-	curl -sf "$link" > "$corpusdir/$id-$name" || exit 1
+	curl -sf "$link" > "$file" || exit 1
 	sed -i 's/<[^>]*>//g
 	s/&nbsp;//g
 	s/\t//g
 	/./,/^$/!d
-	s/  \+/ /g' "$corpusdir/$id-$name"
-
-	tagfile "$corpusdir/$id-$name"
+	s/  \+/ /g' "$file"
 }
 
 sub() { for x in $1; do
@@ -82,12 +81,12 @@ tagword() { for word in $1; do
 	done
 }
 
-checkfile() { output="$1-tagged"
+check() { output="$1-tagged"
 	if [ -e "$output" ]; then
 		echo "The tagged file already exists, would you like to remove it? [yN]"
 		read -r choice
 		echo "$choice" | grep -iq "^y$" &&
-			rm -f "$output"
+			rm -f "$output" || exit 1
 	fi
 }
 
@@ -126,7 +125,16 @@ getfiles() { files=$(find "$corpusdir" -type f -printf "%f\n" | grep -o "[0-9]\{
 
 list() { getfiles && [ -n "$files" ] && echo "$files" || exit 1 ;}
 
-info() { cat << EOF
+setopus() { if [ -n "${opus+x}" ] && [ "$opus" != "$1" ]; then
+		echo "Running $1 with $opus..."
+		echo "Incompatible options given. Only one action may be specified per run."
+		return 1
+	else
+		opus="$1"
+	fi
+}
+
+corpusinfo() { cat << EOF
 corpus: grammatical tagger for Latin text documents
 
 Main options:
@@ -139,12 +147,22 @@ Main options:
 EOF
 }
 
-while getopts ":t:w:cvld" o; do case "${o}" in
-	t) checkfile "$OPTARG" ; tagfile "$OPTARG" || exit 1 ;;
-	w) tagword "$OPTARG" || exit 1 ;;
-	c) getlatin || exit 1 ;;
-	v) view || exit 1 ;;
-	l) list || exit 1 ;;
-	d) delete || exit 1 ;;
-	*) info ; exit 1 ;;
+while getopts "cvldt:w:" o; do case "${o}" in
+	l) setopus list || exit 1 ;;
+	t) setopus tagfile || exit 1; file="$OPTARG" ;;
+	w) setopus tagword || exit 1; word="$OPTARG" ;;
+	c) setopus add || exit 1 ;;
+	v) setopus view || exit 1 ;;
+	d) setopus delete || exit 1 ;;
+	*) corpusinfo; exit 1 ;;
 esac done
+
+case "$opus" in
+	list) list ;;
+	tagfile) check "$file" && tagfile "$file" ;;
+	tagword) tagword "$word" ;;
+	add) getlatin && tagfile "$file" ;;
+	view) view ;;
+	delete) delete ;;
+	*) corpusinfo; exit 1 ;;
+esac
