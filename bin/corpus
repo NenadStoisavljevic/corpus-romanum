@@ -110,15 +110,9 @@ delete() { echo "Choose the file you would like to delete (by number):" && list
 	fi
 }
 
-view() { echo "Choose the file you would like to view (by number):" && list
-	read -r input
-	chosen="^$input-"
-	stored="$(find "$corpusdir" -type f -printf "%f\n" | grep "$chosen")"
-	if [ -z "$stored" ]; then
-		echo "File does not exist, could not open."
-	else
-		less "$corpusdir/$stored"
-	fi
+search() { [ "$(ls -A "$corpusdir")" ] || echo "Corpus is empty, run with -c to add Latin texts."
+	echo "Searching corpus..."
+	du -a "$corpusdir"/* | awk '{print $2}' | fzf --delimiter / --with-nth -1 | xargs -r less
 }
 
 getfiles() { files=$(find "$corpusdir" -type f -printf "%f\n" | grep -o "[0-9]\{1,\}-.*" | sed "s/-/) /" | sort -n) ;}
@@ -141,18 +135,18 @@ Main options:
   -t	Tag file
   -w	Tag word(s) (recommended to be in double quotes)
   -c	Download Latin text from The Latin Library
-  -v	View any file from the corpus
+  -s	Search for any file from the corpus
   -l	List files stored in the corpus
   -d	Remove file from corpus
 EOF
 }
 
-while getopts "cvldt:w:" o; do case "${o}" in
+while getopts "csldt:w:" o; do case "${o}" in
 	l) setopus list || exit 1 ;;
 	t) setopus tagfile || exit 1; file="$OPTARG" ;;
 	w) setopus tagword || exit 1; word="$OPTARG" ;;
 	c) setopus add || exit 1 ;;
-	v) setopus view || exit 1 ;;
+	s) setopus search || exit 1 ;;
 	d) setopus delete || exit 1 ;;
 	*) corpusinfo; exit 1 ;;
 esac done
@@ -162,7 +156,7 @@ case "$opus" in
 	tagfile) check "$file" && tagfile "$file" ;;
 	tagword) tagword "$word" ;;
 	add) getlatin && tagfile "$file" ;;
-	view) view ;;
+	search) search ;;
 	delete) delete ;;
 	*) corpusinfo; exit 1 ;;
 esac
