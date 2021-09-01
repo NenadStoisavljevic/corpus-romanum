@@ -4,6 +4,7 @@
 # find it at https://github.com/mk270/whitakers-words.
 
 corpusdir="${XDG_DATA_HOME:-$HOME/.local/share}/corpus"
+website="thelatinlibrary.com"
 
 ! mkdir -p "$corpusdir" && echo "Do you have write access in this directory?" && exit 1
 
@@ -22,6 +23,9 @@ VPAR:R"
 
 getlatin() { echo "Enter the full link of the text:"
 	read -r link
+	domain="$(echo "$link" | cut -d '/' -f3)"
+	[ "$domain" != "$website" ] && echo "Not a valid URL, check http://thelatinlibrary.com for Latin texts." && exit 1
+
 	echo "Enter the name of the text:"
 	read -r name
 	getfiles; for x in $(seq 1 99); do echo "$files" | grep -q "^$x)" || { export id=$x; break ;}; done
@@ -37,7 +41,7 @@ getlatin() { echo "Enter the full link of the text:"
 }
 
 sub() { for x in $1; do
-		letter=$(echo "$subs" | grep -w "$x" | cut -d ':' -f 2)
+		letter=$(echo "$subs" | grep -w "$x" | cut -d ':' -f2)
 		[ -z "$letter" ] && labels="${labels}$x" || labels="${labels}$letter"
 	done; printf "%s\n" "$labels"
 }
