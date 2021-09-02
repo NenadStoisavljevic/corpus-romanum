@@ -24,13 +24,13 @@ VPAR:R"
 getlatin() { echo "Enter the full link of the text:"
 	read -r link
 	domain="$(echo "$link" | cut -d '/' -f3)"
-	[ "$domain" != "$website" ] && echo "Not a valid URL, check http://thelatinlibrary.com for Latin texts." && exit 1
+	echo "$domain" | grep -q "$website" || { echo "Not a valid URL, check http://thelatinlibrary.com for Latin texts." && exit 1 ;}
 
 	echo "Enter the name of the text:"
 	read -r name
+	escname="$(echo "$name" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
 	getfiles; for x in $(seq 1 99); do echo "$files" | grep -q "^$x)" || { export id=$x; break ;}; done
-	name="$(echo "$name" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
-	file="$corpusdir/$id-$name"
+	file="$corpusdir/$id-$escname"
 
 	curl -sf "$link" > "$file" || exit 1
 	sed -i 's/<[^>]*>//g
