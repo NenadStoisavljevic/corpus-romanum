@@ -6,7 +6,7 @@
 corpusdir="${XDG_DATA_HOME:-$HOME/.local/share}/corpus"
 website="thelatinlibrary.com"
 
-! mkdir -p "$corpusdir" && echo "Do you have write access in this directory?" && exit 1
+[ -d "$corpusdir" ] || mkdir -p "$corpusdir"
 
 # A list of substitutes for the parts of speech.
 subs="ADJ:A
@@ -25,7 +25,6 @@ getlatin() { echo "Enter the full link of the text:"
 	read -r link
 	domain="$(echo "$link" | cut -d '/' -f3)"
 	echo "$domain" | grep -q "$website" || { echo "Not a valid URL, check http://thelatinlibrary.com for Latin texts." && exit 1 ;}
-
 	echo "Enter the name of the text:"
 	read -r name
 	escname="$(echo "$name" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
@@ -74,7 +73,8 @@ tagfile() { [ ! -e "$1" ] && echo "\"$1\" is not a valid file." && return 1
 	done < "$1"
 }
 
-tagword() { for word in $1; do
+tagword() { [ -z "$1" ] && echo "Provide a word to tag." && exit 1
+	for word in $1; do
 		pos=$(words "$word" | grep -Ev '(;|])' | awk '$2~/[A-Z]/{print $2}' | sort -u)
 		letters=$(sub "$pos")
 		if [ -z "$letters" ]; then
@@ -91,6 +91,8 @@ check() { output="$1-tagged"
 		read -r choice
 		echo "$choice" | grep -iq "^y$" &&
 			rm -f "$output" || exit 1
+	else
+		exit 1
 	fi
 }
 
@@ -110,11 +112,11 @@ delete() { echo "Choose the file you would like to delete (by number):" && list
 	elif [ -n "$stored" ] && [ -z "$tagged" ]; then
 		rm -f "$corpusdir/$stored"
 	else
-		echo "File does not exist, could not delete it."
+		echo "File does not exist, could not delete it." && exit 1
 	fi
 }
 
-search() { [ "$(ls -A "$corpusdir")" ] || echo "Corpus is empty, run with -c to add Latin texts."
+search() { [ "$(ls -A "$corpusdir")" ] || { echo "Corpus is empty, run with -c to add Latin texts." && exit 1 ;}
 	echo "Searching corpus..."
 	du -a "$corpusdir"/* | awk '{print $2}' | fzf --delimiter / --with-nth -1 | xargs -r less
 }
