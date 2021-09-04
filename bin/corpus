@@ -24,7 +24,7 @@ VPAR:R"
 getlatin() { echo "Enter the full link of the text:"
 	read -r link
 	domain="$(echo "$link" | cut -d '/' -f3)"
-	echo "$domain" | grep -q "$website" || { echo "Not a valid URL, check http://thelatinlibrary.com for Latin texts." && exit 1 ;}
+	echo "$domain" | grep -q "$website" || { echo "Not a valid URL. Check http://thelatinlibrary.com for Latin texts." && exit 1 ;}
 	echo "Enter the name of the text:"
 	read -r name
 	escname="$(echo "$name" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
@@ -45,8 +45,10 @@ sub() { for x in $1; do
 	done; printf "%s\n" "$labels"
 }
 
-tagfile() { [ ! -e "$1" ] && echo "\"$1\" is not a valid file." && return 1
-	if [ -n "$id" ]; then
+tagfile() { [ ! -e "$1" ] && echo "The file does not exist." && return 1
+	if [ ! -s "$1" ]; then
+		echo "The file is empty. Please check the file." && exit 1
+	elif [ -n "$id" ]; then
 		file="$(basename "$1" | sed "s/[0-9]\{1,\}-//")"; id=$((id+1))
 		output="$corpusdir/$id-$file-tagged" && echo "Tagging \"$file\"..."
 	else
@@ -91,8 +93,6 @@ check() { output="$1-tagged"
 		read -r choice
 		echo "$choice" | grep -iq "^y$" &&
 			rm -f "$output" || exit 1
-	else
-		exit 1
 	fi
 }
 
