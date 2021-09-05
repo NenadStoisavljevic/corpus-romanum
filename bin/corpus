@@ -135,23 +135,24 @@ setopus() { if [ -n "${opus+x}" ] && [ "$opus" != "$1" ]; then
 }
 
 corpusinfo() { cat << EOF
-corpus: grammatical tagger for Latin text documents
+corpus: searchable Latin corpus and grammatical
+part-of-speech tagger for Latin texts
 
 Main options:
-  -t	Tag file
-  -w	Tag word(s) (recommended to be in double quotes)
-  -c	Download Latin text from The Latin Library
-  -s	Search for any file from the corpus
-  -l	List files stored in the corpus
-  -d	Remove file from corpus
+  -a link	Download Latin text (must be from thelatinlibrary.com)
+  -t file	Tag file which is not in the corpus
+  -T words	Tag Latin words (recommended to be in double quotes)
+  -s		Search for any file in the corpus
+  -l		List files stored in the corpus
+  -d		Remove file from corpus
 EOF
 }
 
-while getopts "csldt:w:" o; do case "${o}" in
+while getopts "asldt:T:" o; do case "${o}" in
 	l) setopus list || exit 1 ;;
 	t) setopus tagfile || exit 1; file="$OPTARG" ;;
-	w) setopus tagword || exit 1; word="$OPTARG" ;;
-	c) setopus add || exit 1 ;;
+	T) setopus tagword || exit 1; word="$OPTARG" ;;
+	a) setopus add || exit 1 ;;
 	s) setopus search || exit 1 ;;
 	d) setopus delete || exit 1 ;;
 	*) corpusinfo; exit 1 ;;

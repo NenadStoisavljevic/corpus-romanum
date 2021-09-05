@@ -8,6 +8,8 @@ A useful resource out there is [The Latin Library](https://www.thelatinlibrary.c
 
 #### Dependencies
 
+- `curl` - downloads the texts (required for adding texts to corpus)
+- `fzf` - Terminal fuzzy finder for searching the corpus.
 - `words` - William Whitaker's Words is a digital Latin-English dictionary with inflectional morphology support. This tool can be used to help in translations for any Latin student. Check out the repo [here](https://github.com/mk270/whitakers-words).
 
 ```
