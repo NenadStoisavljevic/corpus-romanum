@@ -139,12 +139,12 @@ corpus: searchable Latin corpus and grammatical
 part-of-speech tagger for Latin texts
 
 Main options:
-  -a link	Download Latin text (must be from thelatinlibrary.com)
-  -t file	Tag file which is not in the corpus
-  -T words	Tag Latin words (recommended to be in double quotes)
-  -s		Search for any file in the corpus
-  -l		List files stored in the corpus
-  -d		Remove file from corpus
+  -a link	Add a text to the corpus (must be from thelatinlibrary.com)
+  -l		List all currently stored texts
+  -t file	Tag a file which is not to be stored in the corpus
+  -T word	Mark up a Latin word (recommended to be in double quotes)
+  -s		Search all texts which are stored in the corpus
+  -d		Choose a text to delete from the corpus
 EOF
 }
 
