@@ -28,15 +28,16 @@ getlatin() { echo "Enter the full link of the text:"
 	echo "Enter the name of the text:"
 	read -r name
 	escname="$(echo "$name" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
+
 	getfiles; for x in $(seq 1 99); do echo "$files" | grep -q "^$x)" || { export id=$x; break ;}; done
 	file="$corpusdir/$id-$escname"
+	tmp="$corpusdir/tmp"
 
-	curl -sf "$link" > "$file" || exit 1
-	sed -i 's/<[^>]*>//g
-	s/&nbsp;//g
-	s/\t//g
-	/./,/^$/!d
-	s/  \+/ /g' "$file"
+	# Format Latin text from website.
+	curl -sf "$link" > "$tmp" || exit 1
+	sed -i 's/<[^>]*>//g;s/&nbsp;//g;s/\t//g' "$tmp"
+	cat -s "$tmp" > "$file" && rm -f "$tmp"
+	sed -i '1d;$d' "$file"
 }
 
 sub() { for x in $1; do
