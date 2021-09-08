@@ -21,22 +21,19 @@ SUPINE:U
 TACKON:T
 VPAR:R"
 
-getlatin() { echo "Enter the full link of the text:"
-	read -r link
+getlatin() { echo "Enter the full link of the text:"; read -r link
 	domain="$(echo "$link" | cut -d '/' -f3)"
 	echo "$domain" | grep -q "$website" || { echo "Not a valid URL. Check http://thelatinlibrary.com for Latin texts." && exit 1 ;}
-	echo "Enter the name of the text:"
-	read -r name
+	echo "Enter the name of the text:"; read -r name
 	escname="$(echo "$name" | iconv -cf UTF-8 -t ASCII//TRANSLIT | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed "s/-\+/-/g;s/\(^-\|-\$\)//g")"
-
 	getfiles; for x in $(seq 1 99); do echo "$files" | grep -q "^$x)" || { export id=$x; break ;}; done
 	file="$corpusdir/$id-$escname"
-	tmp="$corpusdir/tmp"
+	text="$(mktemp)"
 
 	# Format Latin text from website.
-	curl -sf "$link" > "$tmp" || exit 1
-	sed -i 's/<[^>]*>//g;s/&nbsp;//g;s/\t//g' "$tmp"
-	cat -s "$tmp" > "$file" && rm -f "$tmp"
+	curl -sf "$link" > "$text" || exit 1
+	sed -i 's/<[^>]*>//g;s/&nbsp;//g;s/\t//g' "$text"
+	cat -s "$text" > "$file" && rm -f "$text"
 	sed -i '1d;$d' "$file"
 }
 
@@ -97,7 +94,8 @@ check() { output="$1-tagged"
 	fi
 }
 
-delete() { echo "Choose the file you would like to delete (by number):" && list
+delete() { echo "Choose the file you would like to delete (by number):"
+	list || exit 1
 	read -r input
 	chosen="^$input-"
 	stored="$(find "$corpusdir" -type f -printf "%f\n" | grep "$chosen")"
